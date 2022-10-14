@@ -2,10 +2,10 @@ package interfaces
 
 import "github.com/ferdvtn/todolist/apps/domains"
 
-type TodolistRepo interface {
-	Create(input domains.Todolist, createdBy string) (domains.Todolist, error)
-	Update(input domains.Todolist, updatedBy string) (domains.Todolist, error)
+type TodosRepo interface {
+	Create(input domains.Todos, createdBy string) (domains.Todos, error)
+	Update(input domains.Todos, updatedBy string) (domains.Todos, error)
 	Delete(ID int, deletedBy string) error
-	Get(ID int) (domains.Todolist, error)
-	GetAll() ([]domains.Todolist, error)
+	Get(ID int) (domains.Todos, error)
+	GetAll() ([]domains.Todos, error)
 }

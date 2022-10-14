@@ -11,10 +11,10 @@ func main() {
 	db, err := db.GetDB()
 	checkError(err)
 
-	todolistRepo := repositories.NewTodolistMysql(db)
-	todolistSrv := services.NewTodolistService(todolistRepo)
+	todosRepo := repositories.NewTodosMysql(db)
+	todosSrv := services.NewTodosService(todosRepo)
 
-	r := routes.NewRoute(todolistSrv)
+	r := routes.NewRoute(todosSrv)
 
 	r.Start(":1323")
 }

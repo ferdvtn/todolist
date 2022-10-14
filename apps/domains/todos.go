@@ -1,12 +1,12 @@
 package domains
 
-type Todolist struct {
+type Todos struct {
 	ID          int
 	Title       string
 	Description string
 	Priority    int
 }
 
-func (d Todolist) IsValid() error {
+func (d Todos) IsValid() error {
 	return nil
 }

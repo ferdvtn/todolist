@@ -7,16 +7,17 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-func NewRoute(todolistSrv interfaces.TodolistService) *echo.Echo {
-	todolistRoute := NewTodolistRoute(todolistSrv)
+func NewRoute(todosSrv interfaces.TodosService) *echo.Echo {
+	todosRoute := NewTodosRoute(todosSrv)
 
 	e := echo.New()
 	e.Use(middleware.Logger())
 
 	g := e.Group("/api/v1")
 
-	g.GET("/todolists", todolistRoute.getAll)
-	g.GET("/todolists/:ID", todolistRoute.get)
+	g.POST("/todos", todosRoute.create)
+	g.GET("/todos/:ID", todosRoute.get)
+	g.GET("/todos", todosRoute.getAll)
 
 	return e
 }

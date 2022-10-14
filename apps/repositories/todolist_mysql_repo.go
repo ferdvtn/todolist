@@ -1,15 +1,20 @@
 package repositories
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/ferdvtn/todolist/apps/domains"
 )
 
-type TodolistMysql struct{}
+type TodolistMysql struct {
+	db *sql.DB
+}
 
-func NewTodolistMysql() *TodolistMysql {
-	return &TodolistMysql{}
+func NewTodolistMysql(db *sql.DB) *TodolistMysql {
+	return &TodolistMysql{
+		db: db,
+	}
 }
 
 func (r TodolistMysql) Create(input domains.Todolist, createdBy string) (domains.Todolist, error) {

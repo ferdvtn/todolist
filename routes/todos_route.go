@@ -21,8 +21,18 @@ func NewTodosRoute(todosSrv interfaces.TodosService) *TodosRoute {
 }
 
 func (r TodosRoute) create(ctx echo.Context) error {
+	request := new(dto.TodosDtoRequest)
+	err := ctx.Bind(request)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
 
-	return nil
+	result, err := r.todosSrv.Create(request.Title, request.Description, request.Priority, "tmp_user")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
+
+	return ctx.JSON(http.StatusCreated, dto.NewDtoResponse("", dto.ToTodosDtoResponse(result)))
 }
 
 func (r TodosRoute) get(ctx echo.Context) error {

@@ -16,7 +16,23 @@ func NewTodosService(todosRepo interfaces.TodosRepo) *TodosService {
 }
 
 func (srv TodosService) Create(title, description string, priority int, createdBy string) (domains.Todos, error) {
-	return domains.Todos{}, nil
+	arg := domains.Todos{
+		Title:       title,
+		Description: description,
+		Priority:    priority,
+	}
+
+	err := arg.IsValid()
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	result, err := srv.todosRepo.Create(arg, createdBy)
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	return result, nil
 }
 
 func (srv TodosService) Update(title, description string, priority int, updatedBy string) (domains.Todos, error) {

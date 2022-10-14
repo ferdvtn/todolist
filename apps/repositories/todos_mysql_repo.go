@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ferdvtn/todolist/apps/domains"
+	"github.com/ferdvtn/todolist/helpers"
 )
 
 type TodosMysql struct {
@@ -18,7 +19,29 @@ func NewTodosMysql(db *sql.DB) *TodosMysql {
 }
 
 func (repo TodosMysql) Create(input domains.Todos, createdBy string) (domains.Todos, error) {
-	return domains.Todos{}, nil
+	stmt, err := repo.db.Prepare("INSERT INTO `todolist`.`todos` (`title`, `description`, `priority`) VALUES (?, ?, ?);")
+	if err != nil {
+		return domains.Todos{}, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(
+		input.Title,
+		helpers.ToNullString(input.Description),
+		input.Priority,
+	)
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	input.ID = int(id)
+
+	return input, nil
 }
 
 func (repo TodosMysql) Update(input domains.Todos, updatedBy string) (domains.Todos, error) {

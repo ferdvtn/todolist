@@ -64,14 +64,18 @@ func (repo TodosMysql) Delete(ID int, deletedBy string) error {
 
 func (repo TodosMysql) Get(ID int) (domains.Todos, error) {
 	var result domains.Todos
+	var nullDescription sql.NullString
 	err := repo.db.QueryRow("SELECT `id`, `title`, `description`, `priority` FROM `todos` WHERE `id` = ?;", ID).Scan(
 		&result.ID,
 		&result.Title,
-		&result.Description,
+		&nullDescription,
 		&result.Priority,
 	)
 	if err != nil {
 		return domains.Todos{}, err
+	}
+	if nullDescription.Valid {
+		result.Description = nullDescription.String
 	}
 
 	return result, nil
@@ -88,14 +92,18 @@ func (repo TodosMysql) GetAll() ([]domains.Todos, error) {
 
 	for rows.Next() {
 		var result domains.Todos
+		var nullDescription sql.NullString
 		err := rows.Scan(
 			&result.ID,
 			&result.Title,
-			&result.Description,
+			&nullDescription,
 			&result.Priority,
 		)
 		if err != nil {
 			return []domains.Todos{}, err
+		}
+		if nullDescription.Valid {
+			result.Description = nullDescription.String
 		}
 
 		results = append(results, result)

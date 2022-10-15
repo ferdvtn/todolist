@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/ferdvtn/todolist/apps/domains"
 	"github.com/ferdvtn/todolist/helpers"
@@ -19,13 +18,8 @@ func NewTodosMysql(db *sql.DB) *TodosMysql {
 }
 
 func (repo TodosMysql) Create(input domains.Todos, createdBy string) (domains.Todos, error) {
-	stmt, err := repo.db.Prepare("INSERT INTO `todolist`.`todos` (`title`, `description`, `priority`) VALUES (?, ?, ?);")
-	if err != nil {
-		return domains.Todos{}, err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.Exec(
+	result, err := repo.db.Exec(
+		"INSERT INTO `todos` (`title`, `description`, `priority`) VALUES (?, ?, ?);",
 		input.Title,
 		helpers.ToNullString(input.Description),
 		input.Priority,
@@ -45,35 +39,67 @@ func (repo TodosMysql) Create(input domains.Todos, createdBy string) (domains.To
 }
 
 func (repo TodosMysql) Update(input domains.Todos, updatedBy string) (domains.Todos, error) {
-	return domains.Todos{}, nil
+	_, err := repo.db.Exec(
+		"UPDATE `todos` SET `title` = ?, `description` = ?, `priority` = ? WHERE `id` = ?;",
+		input.Title,
+		helpers.ToNullString(input.Description),
+		input.Priority,
+		input.ID,
+	)
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	return input, nil
 }
 
 func (repo TodosMysql) Delete(ID int, deletedBy string) error {
+	_, err := repo.db.Exec("DELETE FROM `todos` WHERE `id` = ?;", ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (repo TodosMysql) Get(ID int) (domains.Todos, error) {
-	return domains.Todos{
-		ID:          ID,
-		Title:       fmt.Sprint("task ", ID),
-		Description: fmt.Sprint("Desc of task ", ID),
-		Priority:    1,
-	}, nil
+	var result domains.Todos
+	err := repo.db.QueryRow("SELECT `id`, `title`, `description`, `priority` FROM `todos` WHERE `id` = ?;", ID).Scan(
+		&result.ID,
+		&result.Title,
+		&result.Description,
+		&result.Priority,
+	)
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	return result, nil
 }
 
 func (repo TodosMysql) GetAll() ([]domains.Todos, error) {
-	return []domains.Todos{
-		{
-			ID:          1,
-			Title:       "task 1",
-			Description: "Desc of task 1",
-			Priority:    1,
-		},
-		{
-			ID:          2,
-			Title:       "task 2",
-			Description: "Desc of task 2",
-			Priority:    2,
-		},
-	}, nil
+	var results []domains.Todos
+
+	rows, err := repo.db.Query("SELECT `id`, `title`, `description`, `priority` FROM `todos`;")
+	if err != nil {
+		return []domains.Todos{}, nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result domains.Todos
+		err := rows.Scan(
+			&result.ID,
+			&result.Title,
+			&result.Description,
+			&result.Priority,
+		)
+		if err != nil {
+			return []domains.Todos{}, err
+		}
+
+		results = append(results, result)
+	}
+
+	return results, nil
 }

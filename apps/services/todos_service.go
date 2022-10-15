@@ -35,11 +35,33 @@ func (srv TodosService) Create(title, description string, priority int, createdB
 	return result, nil
 }
 
-func (srv TodosService) Update(title, description string, priority int, updatedBy string) (domains.Todos, error) {
-	return domains.Todos{}, nil
+func (srv TodosService) Update(ID int, title, description string, priority int, updatedBy string) (domains.Todos, error) {
+	arg := domains.Todos{
+		ID:          ID,
+		Title:       title,
+		Description: description,
+		Priority:    priority,
+	}
+
+	err := arg.IsValid()
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	result, err := srv.todosRepo.Update(arg, updatedBy)
+	if err != nil {
+		return domains.Todos{}, err
+	}
+
+	return result, nil
 }
 
 func (srv TodosService) Delete(ID int, deletedBy string) error {
+	err := srv.todosRepo.Delete(ID, deletedBy)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

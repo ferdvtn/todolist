@@ -35,9 +35,44 @@ func (r TodosRoute) create(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, dto.NewDtoResponse("", dto.ToTodosDtoResponse(result)))
 }
 
+func (r TodosRoute) update(ctx echo.Context) error {
+	argID := ctx.Param("ID")
+	ID, err := strconv.Atoi(argID)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
+
+	request := new(dto.TodosDtoRequest)
+	err = ctx.Bind(request)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
+
+	result, err := r.todosSrv.Update(ID, request.Title, request.Description, request.Priority, "tmp_user")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
+
+	return ctx.JSON(http.StatusOK, dto.NewDtoResponse("", dto.ToTodosDtoResponse(result)))
+}
+
+func (r TodosRoute) delete(ctx echo.Context) error {
+	argID := ctx.Param("ID")
+	ID, err := strconv.Atoi(argID)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
+
+	err = r.todosSrv.Delete(ID, "tmp_user")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
+	}
+
+	return ctx.JSON(http.StatusOK, dto.NewDtoResponse("", nil))
+}
+
 func (r TodosRoute) get(ctx echo.Context) error {
 	argID := ctx.Param("ID")
-
 	ID, err := strconv.Atoi(argID)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, dto.NewDtoResponse(err.Error(), nil))
